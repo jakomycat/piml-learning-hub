@@ -25,3 +25,20 @@ def generate_domain_samples(n_u, n_f, x_min, x_max, t_min, t_max, device):
     x_f = torch.empty((n_f, 1), dtype=torch.float32).uniform_(x_min, x_max).to(device)
     
     return (t_u, x_u, u_u), (t_f, x_f)
+
+
+def generate_noisy_data(n_obs, x_min, x_max, t_min, t_max, device, noise_level=0.05):
+    """Generates noisy data to try to discover the parameters "lambda".
+
+    The data is generated considering lambda_1=6.0 and lambda_2=1.0.
+    """
+    x_data = torch.empty((n_obs, 1), dtype=torch.float32).uniform_(x_min, x_max).to(device)
+    t_data = torch.empty((n_obs, 1), dtype=torch.float32).uniform_(t_min, t_max).to(device)
+
+    u_exact = 2 * (0.5**2) * (1.0 / torch.cosh(0.5 * x_data - 4 * (0.5**3) * t_data))**2
+
+    noise = noise_level * torch.std(u_exact) * torch.randn_like(u_exact)
+
+    u_obs = u_exact + noise
+
+    return (x_data, t_data), u_obs
